@@ -72,3 +72,58 @@ export async function createEmptyInvoice(email: string, name: string) {
     console.error(error);
   }
 }
+
+export async function getInvoicesByEmail(email: string) {
+  if (!email) return;
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+      include: {
+        invoices: {
+          include: {
+            lines: true,
+          },
+        },
+      },
+    });
+    if (user) {
+      const today = new Date();
+      const updatedInvoices = await Promise.all(
+        user.invoices.map(async (invoice) => {
+          const dueDate = new Date(invoice.dueDate);
+          if (dueDate < today && invoice.status === 2) {
+            const updatedInvoice = await prisma.invoice.update({
+              where: { id: invoice.id },
+              data: { status: 5 },
+              include: { lines: true },
+            });
+            return updatedInvoice;
+          }
+          return invoice;
+        })
+      );
+      return updatedInvoices;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function getInvoiceById(invoiceId: string) {
+  try {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      include: {
+        lines: true,
+      },
+    });
+    if (!invoice) {
+      throw new Error("Facture non trouvée");
+    }
+    return invoice;
+  } catch (error) {
+    console.error(error);
+  }
+}
