@@ -8,7 +8,7 @@ interface Props {
 
 const InvoiceInfo: React.FC<Props> = ({ invoice, setInvoice }) => {
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextareaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     field: string
   ) => {
     setInvoice({
